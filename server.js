@@ -2,14 +2,14 @@ require('dotenv').config()
 const express = require('express');
 const mongoose = require('mongoose');
 const userRouter = require('./routes/users');
-const authorRouter = require('./routes/authors');
-const bookRouter = require('./routes/books');
+const brandRouter = require('./routes/brands');
+const productRouter = require('./routes/products');
 const categoryRouter = require('./routes/categories');
 const reviewRouter = require('./routes/reviews');
 
 const port = process.env.port || 5000;
 const app = express();
-mongoose.connect('mongodb://localhost:27017/goodReads', {
+mongoose.connect('mongodb://localhost:27017/goShop', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true
@@ -37,8 +37,8 @@ app.use((req, res, next) => {
     next();
 });
 app.use('/users', userRouter);
-app.use('/authors', authorRouter);
-app.use('/books', bookRouter);
+app.use('/brands', brandRouter);
+app.use('/products', productRouter);
 app.use('/categories', categoryRouter);
 app.use('/reviews', reviewRouter);
 

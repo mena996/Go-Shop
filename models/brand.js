@@ -2,9 +2,8 @@ const mongoose = require('mongoose');
 const ProductModel = require('./product');
 
 const BrandSchema = new mongoose.Schema({
-    firstName: { type: String, required: true, minlength: 2 },
-    lastName: { type: String, required: true, minlength: 2 },
-    birthDate: { type: Date, required: true },
+    name: { type: String, required: true, minlength: 2 },
+    description: { type: String, required: true, minlength: 2 },
     image: { type: String, required: true, minlength: 4 },
     products: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
 })

@@ -1,27 +1,14 @@
 const express = require('express');
-const BookModel = require('../models/product');
-const RateBookModel = require('../models/rate');
-const ShelvBookModel = require('../models/cart');
+const ProductModel = require('../models/product');
+const RateModel = require('../models/rate');
+const CartModel = require('../models/cart');
 const router = express.Router();
 const auth = require('./auth');
 const multer = require('./multer');
 
-// router.get('/', (req, res, next) => {
-//     // return BookModel.find({}).populate('book_id','name', 'image', 'category', 'author').exec((err, posts) => {
-//     //     if (err) return res.send(err);
-//     //     res.json(posts);
-//     // });
-// });
-// router.get('/:id', (req, res, next) => {
-//     return PostModel.findById(req.params.id).populate('auther_id', ['firstName', 'lastName']).exec((err, posts) => {
-//         if (err) next(err);
-//         res.json(posts);
-//     });
-// });
-
 router.get('/', async (req, res, next) => {
     try {
-        const books = await BookModel.find({}).populate('author').populate('category')
+        const books = await ProductModel.find({}).populate('brand').populate('category')
         if (books) res.send(books);
         else next(err)
 
@@ -30,27 +17,19 @@ router.get('/', async (req, res, next) => {
     }
 });
 
-
-// router.get('/:id', (req, res, next) => {
-//     return BookModel.findById(req.params.id).populate('author').populate('category').exec((err, book) => {
-//         if (err) next(err);
-//         res.json(book);
-//     });
-// });
-
 router.post('/', auth.shouldBe('admin'), multer.upload.single('image'), async (req, res, next) => {
     const url = req.protocol + '://' + req.get('host');
     try {
-        const { name, category, author } = req.body;
-        const book = await BookModel.create({
+        const { name, category, brand } = req.body;
+        const product = await ProductModel.create({
             name,
             image: url + '/public/' + req.file.filename,
             category,
-            author
+            brand
         });
-        res.send(book)
+        res.send(product)
     } catch{
-        next("Erorr while adding a book");
+        next("Erorr while adding a product");
     }
 });
 
@@ -58,29 +37,29 @@ router.patch('/:id', auth.shouldBe('admin'), multer.upload.single('image'), asyn
     const url = req.protocol + '://' + req.get('host');
     if (req.file) req.body.image = url + '/public/' + req.file.filename;
     try {
-        const book = await BookModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true })
-        if (!book) next("book not found");
-        else res.json(book);
+        const product = await ProductModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true })
+        if (!product) next("product not found");
+        else res.json(product);
     } catch{
-        next("Error in editing book")
+        next("Error in editing product")
     }
 });
 
 router.delete('/:id', auth.shouldBe('admin'), async (req, res, next) => {
     try {
-        const book = await BookModel.findByIdAndDelete(req.params.id);
-        if (!book) next("book not found");
-        else res.json(book);
+        const product = await ProductModel.findByIdAndDelete(req.params.id);
+        if (!product) next("product not found");
+        else res.json(product);
     } catch{
-        next("Error in removing book")
+        next("Error in removing product")
     }
 });
 
 router.post('/rate', async (req, res, next) => {
     try {
-        const { rate, user, book } = req.body;
+        const { rate, user, product } = req.body;
         options = { upsert: true, new: true, setDefaultsOnInsert: true };
-        bookRate = await RateBookModel.findOneAndUpdate({ user, book }, { rate, user, book }, options);
+        bookRate = await RateModel.findOneAndUpdate({ user, product }, { rate, user, product }, options);
         res.send(bookRate)
     } catch (err) {
         next(err);
@@ -89,29 +68,29 @@ router.post('/rate', async (req, res, next) => {
 
 router.post('/shelf', async (req, res, next) => {
     try {
-        const { state, user, book } = req.body;
+        const { state, user, product } = req.body;
         options = { upsert: true, new: true, setDefaultsOnInsert: true };
-        bookState = await ShelvBookModel.findOneAndUpdate({ user, book }, { state, user, book }, options);
+        bookState = await CartModel.findOneAndUpdate({ user, product }, { state, user, product }, options);
         res.send(bookState)
     } catch (err) {
         next(err);
     }
 });
 
-router.get('/rate/:user/:book', async (req, res, next) => {
+router.get('/rate/:user/:product', async (req, res, next) => {
     try {
-        const { user, book } = req.params;
-        bookState = await RateBookModel.find({ user, book });
+        const { user, product } = req.params;
+        bookState = await RateModel.find({ user, product });
         res.send(bookState)
     } catch (err) {
         next(err);
     }
 });
 
-router.get('/shelf/:user/:book', async (req, res, next) => {
+router.get('/shelf/:user/:product', async (req, res, next) => {
     try {
-        const { user, book } = req.params;
-        bookState = await ShelvBookModel.find({ user, book });
+        const { user, product } = req.params;
+        bookState = await CartModel.find({ user, product });
         res.send(bookState)
     } catch (err) {
         next(err);
@@ -120,8 +99,8 @@ router.get('/shelf/:user/:book', async (req, res, next) => {
 
 router.get('/shelf/:id', async (req, res) => {
     try {
-        books = await ShelvBookModel.find({}).populate({
-            path: 'book',
+        books = await CartModel.find({}).populate({
+            path: 'product',
             populate: {
                 path: 'author'
             }
@@ -134,19 +113,19 @@ router.get('/shelf/:id', async (req, res) => {
 
 router.get('/topbooks', async (req, res, next) => {
     try {
-        const bookState = await RateBookModel.aggregate(
+        const bookState = await RateModel.aggregate(
             [
                 {
                     $group:
                     {
-                        _id: "$book",
+                        _id: "$product",
                         rate: { $avg: "$rate" },
                     }
                 }
             ]
         ).sort({ rate: -1 }).limit(5);
         const bestBooks = bookState.map(bookState => bookState['_id']);
-        let books = await BookModel.find({ "_id": { "$in": bestBooks } });
+        let books = await ProductModel.find({ "_id": { "$in": bestBooks } });
         res.send(books);
     } catch (err) {
         console.log(err);
@@ -156,24 +135,24 @@ router.get('/topbooks', async (req, res, next) => {
 
 router.get('/topcats', async (req, res, next) => {
     try {
-        const bookState = await RateBookModel.aggregate(
+        const bookState = await RateModel.aggregate(
             [
                 {
                     $group:
                     {
-                        _id: "$book",
+                        _id: "$product",
                         rate: { $avg: "$rate" },
                     }
                 }
             ]
         ).sort({ rate: -1 });
         const bestBooks = bookState.map(bookState => bookState['_id']);
-        let books = await BookModel.find({ "_id": { "$in": bestBooks } }).populate('category');
-        // const bestcats = books.map(book => book['category']['name']);
-        const bestcats = books.map(book => {
+        let books = await ProductModel.find({ "_id": { "$in": bestBooks } }).populate('category');
+        // const bestcats = books.map(product => product['category']['name']);
+        const bestcats = books.map(product => {
             let cat = {}
-            cat["name"] = book['category']['name'];
-            cat["_id"] = book['category']['_id'];
+            cat["name"] = product['category']['name'];
+            cat["_id"] = product['category']['_id'];
             return cat;
         }
         );
@@ -193,23 +172,23 @@ router.get('/topcats', async (req, res, next) => {
 
 router.get('/topauths', async (req, res, next) => {
     try {
-        const bookState = await RateBookModel.aggregate(
+        const bookState = await RateModel.aggregate(
             [
                 {
                     $group:
                     {
-                        _id: "$book",
+                        _id: "$product",
                         rate: { $avg: "$rate" },
                     }
                 }
             ]
         ).sort({ rate: -1 }).limit(5);
         const bestBooks = bookState.map(bookState => bookState['_id']);
-        let books = await BookModel.find({ "_id": { "$in": bestBooks } }).populate('author');
-        const bestauthor = books.map(book => {
+        let books = await ProductModel.find({ "_id": { "$in": bestBooks } }).populate('author');
+        const bestauthor = books.map(product => {
             let auther = {}
-            auther["name"] = book['author']['firstName'] + " " + book['author']['lastName'];
-            auther["_id"] = book['author']['_id'];
+            auther["name"] = product['author']['firstName'] + " " + product['author']['lastName'];
+            auther["_id"] = product['author']['_id'];
             return auther;
         }
         );
@@ -232,11 +211,11 @@ router.get('/topauths', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
     try {
-        const book = await BookModel.findById(req.params.id).populate('author').populate('category')
-        if (!book) next("Book Not found..");
-        else res.send(book);
+        const product = await ProductModel.findById(req.params.id).populate('author').populate('category')
+        if (!product) next("product Not found..");
+        else res.send(product);
     } catch (err) {
-        next("Error fetching book..");
+        next("Error fetching product..");
     }
 });
 
@@ -244,23 +223,23 @@ router.use((err, req, res, next) => {
     res.status(500).send("oh no there is some thing wrong happend :( \n" + err);
 });
 
-//specific book
+//specific product
 router.get('/rate/:id', async (req, res, next) => {
     try {
-        rate = await RateBookModel.aggregate(
+        rate = await RateModel.aggregate(
             [
                 {
                     $group:
                     {
-                        _id: "$book",
+                        _id: "$product",
                         rate: { $avg: "$rate" },
                         count: { $sum: 1 }
                     }
                 }
             ]
         )
-        const book = rate.find(book => book._id == req.params.id)
-        res.send(book ? book : { rate: 0, count: 0 })
+        const product = rate.find(product => product._id == req.params.id)
+        res.send(product ? product : { rate: 0, count: 0 })
     } catch (err) {
         next(err);
     }
