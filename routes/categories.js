@@ -2,7 +2,7 @@ const express = require('express');
 const CategoryModel = require('../models/categories');
 const BookModel = require('../models/product')
 const router = express.Router();
-const auth = require('./auth')
+const auth = require('../middlewares/authorization');
 // const express = require('express');
 // const categoryModel = require('../models/categories')
 

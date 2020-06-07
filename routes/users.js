@@ -1,7 +1,7 @@
 const express = require('express');
 let UserModel = require('../models/users');
 const bcrypt = require('bcrypt');
-const auth = require('./auth')
+const auth = require('./authentication')
 const router = express.Router();
 
 router.post('/', (req, res) => {
@@ -17,13 +17,8 @@ router.post('/', (req, res) => {
     });
 });
 
-router.post('/login', auth.logIn);
-router.post('/token', auth.regenerateAccessToken);
-router.post('/check', auth.authenticateToken);
-router.delete('/logout', auth.logOut);
-
-
-
+router.post('/login', auth.login);
+router.post('/me', auth.getUser);
 
 router.use((err, req, res, next) => {
     res.send("oh no there is some thing wrong happend :( \n" + err);

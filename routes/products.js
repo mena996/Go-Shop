@@ -3,8 +3,8 @@ const ProductModel = require('../models/product');
 const RateModel = require('../models/rate');
 const CartModel = require('../models/cart');
 const router = express.Router();
-const auth = require('./auth');
-const multer = require('./multer');
+const auth = require('../middlewares/authorization');
+const multer = require('../middlewares/multer');
 
 router.get('/', async (req, res, next) => {
     try {

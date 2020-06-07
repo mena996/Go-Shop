@@ -1,8 +1,8 @@
 const express = require('express');
 const BrandModel = require('../models/brand');
 const ProductModel = require('../models/product');
-const auth = require('./auth');
-const multer = require('./multer');
+const auth = require('../middlewares/authorization');
+const multer = require('../middlewares/multer');
 const router = express.Router();
 
 router.get('/', async (req, res) => {
