@@ -42,7 +42,7 @@ router.post('/', auth.shouldBe('admin'), multer.upload.single('image'), async (r
         const author = await BrandModel.create({
             name,
             description,
-            image: url + '/public/' + req.file.filename,
+            image: url + '/public/images/' + req.file.filename,
             products
         });
         res.send(author)
@@ -53,7 +53,7 @@ router.post('/', auth.shouldBe('admin'), multer.upload.single('image'), async (r
 
 router.patch('/:id', auth.shouldBe('admin'), multer.upload.single('image'), async (req, res, next) => {
     const url = req.protocol + '://' + req.get('host');
-    if (req.file) req.body.image = url + '/public/' + req.file.filename;
+    if (req.file) req.body.image = url + '/public/images/' + req.file.filename;
     try {
         const brand = await BrandModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true })
         if (!brand) next("brand not found");
