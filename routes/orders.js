@@ -1,19 +1,14 @@
-const router = require('express').Router;
+const router = require('express').Router();
 const auth = require('../middlewares/authorization');
-const OrdersModel = require('../models/orders');
+const OrderModel = require('../models/order');
 router.get('/', (req, res) => {
-    try {
-        OrdersModel.find({}, (err, orders) => {
-            res.json(orders);
-        })
-    } catch (error) {
-        next("Internal server error: Can't get all orders");
-    }
+    OrderModel.find({}).populate('products.product').populate('customer').then( orders => res.json(orders))
+    .catch( e => next("Internal server error: Can't get all orders"))
 })
 
 router.get('/:id', (req, res) => {
     try {
-        OrdersModel.findById(req.params.id, (err, order) => {
+        OrderModel.findById(req.params.id, (err, order) => {
             res.json(order);
         })
     } catch (error) {
@@ -21,7 +16,7 @@ router.get('/:id', (req, res) => {
     }
 })
 
-router.post('/', auth.shouldBe('admin'),  async(req, res, next) => {
+router.post('/', auth.shouldBe('user'), async(req, res, next) => {
     try {
         const { date, products } = req.body;
         /*
@@ -37,8 +32,11 @@ router.post('/', auth.shouldBe('admin'),  async(req, res, next) => {
                 ]
         }
         */
-        const order = await OrdersModel.create({
+       console.log(date, req.user._id, products)
+       const customer = req.user._id;
+        const order = await OrderModel.create({
             date,
+            customer,
             products,
             status: 0
         });
@@ -49,7 +47,7 @@ router.post('/', auth.shouldBe('admin'),  async(req, res, next) => {
 });
 router.patch('/:id', auth.shouldBe('admin'), async(req, res, next) => {
     try {
-        const order = await OrdersModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true })
+        const order = await OrderModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true })
         if (!order) res.status(404).send("order not found");
         else res.json(order);
     } catch {
@@ -58,7 +56,7 @@ router.patch('/:id', auth.shouldBe('admin'), async(req, res, next) => {
 });
 router.delete('/:id', auth.shouldBe('admin'), async(req, res, next) => {
     try {
-        const order = await OrdersModel.findByIdAndDelete(req.params.id);
+        const order = await OrderModel.findByIdAndDelete(req.params.id);
         if (!order) res.status(404).send("order not found");
         else res.json(order);
     } catch {

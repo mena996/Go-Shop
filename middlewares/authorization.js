@@ -4,19 +4,22 @@ const shouldBe = (role) => {
     return (req, res, next) => {
         if (typeof req.headers.authorization !== "undefined") {
             let token = req.headers.authorization.split(" ")[1];
-            verifyToken = (token, role, res, next);
+            verifyToken(token, role, req, res, next);
         } else {
             notAuthorizedResponse(res);
         }
     }
 }
 
-const verifyToken = (token, role, res, next) => {
+const verifyToken = (token, role, req, res, next) => {
     jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, userData) => {
         if (err) notAuthorizedResponse(res);
         if (role === 'admin') {
             userData.user.isadmin ? next() : res.status(403).json({ error: "Not Authorized" });
-        }else next();
+        }else{
+            req.user = userData.user;
+            next();
+        } 
     });
 }
 
