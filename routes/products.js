@@ -20,10 +20,12 @@ router.get('/', async (req, res, next) => {
 router.post('/', auth.shouldBe('admin'), multer.upload.single('image'), async (req, res, next) => {
     const url = req.protocol + '://' + req.get('host');
     try {
-        const { name, category, brand } = req.body;
+        const { name, category, description, price, brand } = req.body;
         const product = await ProductModel.create({
             name,
             image: url + '/public/images/' + req.file.filename,
+            description,
+            price,
             category,
             brand
         });
@@ -37,7 +39,7 @@ router.patch('/:id', auth.shouldBe('admin'), multer.upload.single('image'), asyn
     const url = req.protocol + '://' + req.get('host');
     if (req.file) req.body.image = url + '/public/images/' + req.file.filename;
     try {
-        const product = await ProductModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true })
+        const product = await ProductModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true, runValidators: true })
         if (!product) next("product not found");
         else res.json(product);
     } catch{
