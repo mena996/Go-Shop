@@ -4,15 +4,17 @@ const bcrypt = require('bcrypt');
 const auth = require('./authentication')
 const router = express.Router();
 const multer = require('../middlewares/multer');
-router.post('/', multer.upload.single('image'), (req, res) => {
+router.post('/', /*multer.upload.single('image'),*/ (req, res) => {
     const url = req.protocol + '://' + req.get('host');
-    const { body: { firstName, lastName, username, email, password } } = req;
+    console.log(req.body);
+    const { body: { firstName, lastName, username, email, password, phone, address } } = req;
     const user = new UserModel({
-        firstName, lastName, username, email, password, isadmin: 0,
-        image: url + '/public/images/' + req.file.filename,
+        firstName, lastName, username, email, password, isadmin: 0, phone, address,
+        // image: url + '/public/images/' + req.file.filename,
     })
     user.save((err) => {
         if (err) {
+            console.log(err);
             return res.status(400).send(err);
         }
         res.json("done");

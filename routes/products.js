@@ -87,31 +87,31 @@ router.get('/rate/:user/:product', async (req, res, next) => {
     }
 });
 
-router.get('/shelf/:user/:product', async (req, res, next) => {
-    try {
-        const { user, product } = req.params;
-        bookState = await CartModel.find({ user, product });
-        res.send(bookState)
-    } catch (err) {
-        next(err);
-    }
-});
+// router.get('/shelf/:user/:product', async (req, res, next) => {
+//     try {
+//         const { user, product } = req.params;
+//         bookState = await CartModel.find({ user, product });
+//         res.send(bookState)
+//     } catch (err) {
+//         next(err);
+//     }
+// });
 
-router.get('/shelf/:id', async (req, res) => {
-    try {
-        books = await CartModel.find({}).populate({
-            path: 'product',
-            populate: {
-                path: 'author'
-            }
-        }).where("user").equals(req.params.id);
-        res.send(books);
-    } catch (err) {
-        next(err);
-    }
-});
+// router.get('/shelf/:id', async (req, res) => {
+//     try {
+//         books = await CartModel.find({}).populate({
+//             path: 'product',
+//             populate: {
+//                 path: 'author'
+//             }
+//         }).where("user").equals(req.params.id);
+//         res.send(books);
+//     } catch (err) {
+//         next(err);
+//     }
+// });
 
-router.get('/topbooks', async (req, res, next) => {
+router.get('/topproducts', async (req, res, next) => {
     try {
         const bookState = await RateModel.aggregate(
             [
@@ -184,20 +184,20 @@ router.get('/topauths', async (req, res, next) => {
             ]
         ).sort({ rate: -1 }).limit(5);
         const bestBooks = bookState.map(bookState => bookState['_id']);
-        let books = await ProductModel.find({ "_id": { "$in": bestBooks } }).populate('author');
-        const bestauthor = books.map(product => {
+        let books = await ProductModel.find({ "_id": { "$in": bestBooks } }).populate('brand');
+        const bestbrand = books.map(product => {
             let auther = {}
-            auther["name"] = product['author']['firstName'] + " " + product['author']['lastName'];
-            auther["_id"] = product['author']['_id'];
+            auther["name"] = product['brand']['name'];
+            auther["_id"] = product['brand']['_id'];
             return auther;
         }
         );
-        const bestauthorU = bestauthor.map(e => e["_id"])
+        const bestbeandU = bestbrand.map(e => e["_id"])
                                     .map((e, i, final) => final.indexOf(e) === i && i)
-                                    .filter((e) => bestauthor[e]).map(e => bestauthor[e]);
+                                    .filter((e) => bestbrand[e]).map(e => bestbrand[e]);
 
-        // console.log(bestauthorU.slice(0, 5))
-        res.send(bestauthorU.slice(0, 5));
+        // console.log(bestbrandU.slice(0, 5))
+        res.send(bestbrandU.slice(0, 5));
     } catch (err) {
         console.log(err);
         next(err);
