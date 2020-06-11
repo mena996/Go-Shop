@@ -6,6 +6,7 @@ const brandRouter = require('./routes/brands');
 const productRouter = require('./routes/products');
 const categoryRouter = require('./routes/categories');
 const reviewRouter = require('./routes/reviews');
+const orderRouter = require('./routes/orders');
 
 const port = process.env.port || 5000;
 const app = express();
@@ -41,6 +42,7 @@ app.use('/brands', brandRouter);
 app.use('/products', productRouter);
 app.use('/categories', categoryRouter);
 app.use('/reviews', reviewRouter);
+app.use('/orders', orderRouter);
 
 app.get('/', (req, res, next) => {
     res.send('HELLO iam the root path');
@@ -48,6 +50,7 @@ app.get('/', (req, res, next) => {
 });
 
 app.use((err, req, res, next) => {
+    console.log(err)
     res.send("oh no there is some thing wrong happend :( \n" + err);
 });
 app.listen(port, (err) => {
