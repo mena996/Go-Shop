@@ -2,18 +2,19 @@ const express = require('express');
 const ProductModel = require('../models/product');
 const RateModel = require('../models/rate');
 const CartModel = require('../models/cart');
+const FavoriteModel = require('../models/favorite');
 const router = express.Router();
 const auth = require('../middlewares/authorization');
 const multer = require('../middlewares/multer');
 
 router.get('/', async (req, res, next) => {
     try {
-        const books = await ProductModel.find({}).populate('brand').populate('category')
-        if (books) res.send(books);
+        const products = await ProductModel.find({}).populate('brand').populate('category')
+        if (products) res.send(products);
         else next(err)
 
     } catch (err) {
-        next("couldent fetch books..");
+        next("couldent fetch products..");
     }
 });
 
@@ -57,23 +58,32 @@ router.delete('/:id', auth.shouldBe('admin'), async (req, res, next) => {
     }
 });
 
-router.post('/rate', async (req, res, next) => {
+router.post('/favorite', async (req, res, next) => {
     try {
-        const { rate, user, product } = req.body;
-        options = { upsert: true, new: true, setDefaultsOnInsert: true };
-        bookRate = await RateModel.findOneAndUpdate({ user, product }, { rate, user, product }, options);
-        res.send(bookRate)
+        const { user, product } = req.body;
+        // options = { upsert: true, new: true, setDefaultsOnInsert: true };
+        productFavorite = await FavoriteModel.find({ user, product });
+        if(productFavorite.length>0){
+            await FavoriteModel.findByIdAndDelete(productFavorite[0]._id);
+            console.log("deleted");
+        }else{
+            await FavoriteModel.create({
+                user, product
+            });
+            console.log("create");
+        }
+        res.send(productFavorite)
     } catch (err) {
         next(err);
     }
 });
 
-router.post('/shelf', async (req, res, next) => {
+router.post('/rate', async (req, res, next) => {
     try {
-        const { state, user, product } = req.body;
+        const { rate, user, product } = req.body;
         options = { upsert: true, new: true, setDefaultsOnInsert: true };
-        bookState = await CartModel.findOneAndUpdate({ user, product }, { state, user, product }, options);
-        res.send(bookState)
+        productRate = await RateModel.findOneAndUpdate({ user, product }, { rate, user, product }, options);
+        res.send(productRate)
     } catch (err) {
         next(err);
     }
@@ -82,8 +92,18 @@ router.post('/shelf', async (req, res, next) => {
 router.get('/rate/:user/:product', async (req, res, next) => {
     try {
         const { user, product } = req.params;
-        bookState = await RateModel.find({ user, product });
-        res.send(bookState)
+        productState = await RateModel.find({ user, product });
+        res.send(productState)
+    } catch (err) {
+        next(err);
+    }
+});
+
+router.get('/favorite/:user/:product', async (req, res, next) => {
+    try {
+        const { user, product } = req.params;
+        productState = await FavoriteModel.find({ user, product });
+        res.send(productState)
     } catch (err) {
         next(err);
     }
@@ -92,8 +112,8 @@ router.get('/rate/:user/:product', async (req, res, next) => {
 // router.get('/shelf/:user/:product', async (req, res, next) => {
 //     try {
 //         const { user, product } = req.params;
-//         bookState = await CartModel.find({ user, product });
-//         res.send(bookState)
+//         productState = await CartModel.find({ user, product });
+//         res.send(productState)
 //     } catch (err) {
 //         next(err);
 //     }
@@ -101,13 +121,13 @@ router.get('/rate/:user/:product', async (req, res, next) => {
 
 // router.get('/shelf/:id', async (req, res) => {
 //     try {
-//         books = await CartModel.find({}).populate({
+//         products = await CartModel.find({}).populate({
 //             path: 'product',
 //             populate: {
 //                 path: 'author'
 //             }
 //         }).where("user").equals(req.params.id);
-//         res.send(books);
+//         res.send(products);
 //     } catch (err) {
 //         next(err);
 //     }
@@ -115,7 +135,7 @@ router.get('/rate/:user/:product', async (req, res, next) => {
 
 router.get('/topproducts', async (req, res, next) => {
     try {
-        const bookState = await RateModel.aggregate(
+        const productState = await RateModel.aggregate(
             [
                 {
                     $group:
@@ -126,9 +146,9 @@ router.get('/topproducts', async (req, res, next) => {
                 }
             ]
         ).sort({ rate: -1 }).limit(5);
-        const bestBooks = bookState.map(bookState => bookState['_id']);
-        let books = await ProductModel.find({ "_id": { "$in": bestBooks } });
-        res.send(books);
+        const bestProducts = productState.map(productState => productState['_id']);
+        let products = await ProductModel.find({ "_id": { "$in": bestProducts } });
+        res.send(products);
     } catch (err) {
         console.log(err);
         next(err);
@@ -137,7 +157,7 @@ router.get('/topproducts', async (req, res, next) => {
 
 router.get('/topcats', async (req, res, next) => {
     try {
-        const bookState = await RateModel.aggregate(
+        const productState = await RateModel.aggregate(
             [
                 {
                     $group:
@@ -148,10 +168,10 @@ router.get('/topcats', async (req, res, next) => {
                 }
             ]
         ).sort({ rate: -1 });
-        const bestBooks = bookState.map(bookState => bookState['_id']);
-        let books = await ProductModel.find({ "_id": { "$in": bestBooks } }).populate('category');
-        // const bestcats = books.map(product => product['category']['name']);
-        const bestcats = books.map(product => {
+        const bestProducts = productState.map(productState => productState['_id']);
+        let products = await ProductModel.find({ "_id": { "$in": bestProducts } }).populate('category');
+        // const bestcats = products.map(product => product['category']['name']);
+        const bestcats = products.map(product => {
             let cat = {}
             cat["name"] = product['category']['name'];
             cat["_id"] = product['category']['_id'];
@@ -172,9 +192,9 @@ router.get('/topcats', async (req, res, next) => {
     }
 });
 
-router.get('/topauths', async (req, res, next) => {
+router.get('/topbrands', async (req, res, next) => {
     try {
-        const bookState = await RateModel.aggregate(
+        const productState = await RateModel.aggregate(
             [
                 {
                     $group:
@@ -185,9 +205,9 @@ router.get('/topauths', async (req, res, next) => {
                 }
             ]
         ).sort({ rate: -1 }).limit(5);
-        const bestBooks = bookState.map(bookState => bookState['_id']);
-        let books = await ProductModel.find({ "_id": { "$in": bestBooks } }).populate('brand');
-        const bestbrand = books.map(product => {
+        const bestProducts = productState.map(productState => productState['_id']);
+        let products = await ProductModel.find({ "_id": { "$in": bestProducts } }).populate('brand');
+        const bestbrand = products.map(product => {
             let auther = {}
             auther["name"] = product['brand']['name'];
             auther["_id"] = product['brand']['_id'];

@@ -4,5 +4,5 @@ const FavoriteSchema = new mongoose.Schema({
     user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
 })
-const favoriteModel = mongoose.model('ShelvBook', FavoriteSchema);
+const favoriteModel = mongoose.model('Favorite', FavoriteSchema);
 module.exports = favoriteModel;
