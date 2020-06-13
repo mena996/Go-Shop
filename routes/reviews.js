@@ -4,15 +4,15 @@ const router = express.Router();
 
 // // get all review test 
 // router.get('/', (req, res, next) => {
-//     return reviewModel.find({}).populate('book').populate('user').exec((err, review) => {
+//     return reviewModel.find({}).populate('product').populate('user').exec((err, review) => {
 //         if (err) next(err);
 //         else res.json(review);
 //     });
 // });
 
-//get specific book review 
+//get specific product review 
 router.get('/:id', (req, res, next) => {
-    const data = reviewModel.find().populate('user').where('book').equals(req.params.id).exec((err, review) => {
+    const data = reviewModel.find().populate('user').where('product').equals(req.params.id).exec((err, review) => {
         if (err) next(err);
         else res.json(review);
     });
@@ -22,11 +22,11 @@ router.get('/:id', (req, res, next) => {
 
 //new review
 router.post('/', (req, res, next) => {
-    const { review, user, book } = req.body;
+    const { review, user, product } = req.body;
     reviewModel.create({
         review,
         user,
-        book
+        product
     }, (err, review) => {
         if (err) next(err);
         

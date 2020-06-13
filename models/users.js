@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema({
     isadmin: { type: Boolean, required: true, minlength: 4 },
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
-    cart: { type: mongoose.Schema.Types.ObjectId , ref : 'Cart' },
+    cart: [{ type: mongoose.Schema.Types.ObjectId , ref : 'Product' }],
 })
 userSchema.pre('save', async function () {
     let docs = await userModel.find({ username: this.username });
