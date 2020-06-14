@@ -34,7 +34,7 @@ router.get('/', auth.shouldBe('admin'), async(req, res) => {
             allOrdersCount,
             pendingOrdersCount,
             deliverdOrdersCount,
-            totalSales: sales[0].total
+            totalSales: sales[0] ? sales[0].total : 0
         });
     } catch (err) {
         return res.status(500).send("Internal server error: Can't get statistics");

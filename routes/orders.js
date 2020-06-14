@@ -1,9 +1,14 @@
 const router = require('express').Router();
 const auth = require('../middlewares/authorization');
 const OrderModel = require('../models/order');
-router.get('/', (req, res) => {
-    OrderModel.find({}).populate('products.product').populate('customer').then( orders => res.json(orders))
-    .catch( e => next("Internal server error: Can't get all orders"))
+router.get('/', auth.shouldBe('admin'), (req, res) => {
+    try {
+        OrderModel.find({}).populate('products.product').populate('customer').exec( (err, order) => {
+            res.json(order);
+        })
+    } catch (error) {
+        next("Internal server error: Can't get all orders");
+    }
 })
 
 router.get('/:id', (req, res) => {
