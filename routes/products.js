@@ -214,7 +214,7 @@ router.get('/topbrands', async (req, res, next) => {
             return auther;
         }
         );
-        const bestbeandU = bestbrand.map(e => e["_id"])
+        const bestbrandU = bestbrand.map(e => e["_id"])
                                     .map((e, i, final) => final.indexOf(e) === i && i)
                                     .filter((e) => bestbrand[e]).map(e => bestbrand[e]);
 
