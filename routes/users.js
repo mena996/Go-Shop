@@ -31,6 +31,37 @@ router.get('/', middleware.shouldBe('admin'), async(req, res) => {
     }
 } )
 
+router.post('/cart', middleware.shouldBe('user'), async(req, res, next) => {
+    try {
+        await UserModel.updateOne({_id: req.user._id}, {$push: {cart: req.body}});
+        res.sendStatus(200);
+    } catch {
+        next("Internal server error: Can't update your cart");
+    }
+});
+
+router.patch('/cart', middleware.shouldBe('user'), async(req, res, next) => {
+    try {
+        console.log(req.body)
+        await UserModel.updateOne({_id: req.user._id }, {$set: {'cart': req.body}}, { new: true})
+        const cart = await UserModel.findOne({_id: req.user._id}).populate('cart.product').select('cart');
+        console.log(cart)
+        res.json(cart);
+    } catch (e){
+        console.log(e)
+        next("Internal server error: Can't update your cart");
+    }
+});
+
+router.get('/cart', middleware.shouldBe('user'), async(req, res, next) => {
+    try {
+        const cart = await UserModel.findOne({_id: req.user._id}).populate('cart.product').select('cart');
+        res.json(cart);
+    } catch {
+        next("Internal server error: Can't get cart details");
+    }
+});
+
 router.patch('/:id', middleware.shouldBe('admin'), async(req, res, next) => {
     try {
         const user = await UserModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true })
@@ -40,6 +71,7 @@ router.patch('/:id', middleware.shouldBe('admin'), async(req, res, next) => {
         next("Internal server error: Can't update user details");
     }
 });
+
 
 router.post('/login', auth.login);
 router.post('/me', auth.getUser);

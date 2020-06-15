@@ -1,7 +1,6 @@
 const express = require('express');
 const ProductModel = require('../models/product');
 const RateModel = require('../models/rate');
-const CartModel = require('../models/cart');
 const FavoriteModel = require('../models/favorite');
 const router = express.Router();
 const auth = require('../middlewares/authorization');

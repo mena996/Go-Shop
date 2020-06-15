@@ -37,7 +37,6 @@ router.post('/', auth.shouldBe('user'), async(req, res, next) => {
                 ]
         }
         */
-       console.log(date, req.user._id, products)
        const customer = req.user._id;
         const order = await OrderModel.create({
             date,

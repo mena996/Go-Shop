@@ -17,7 +17,6 @@ const verifyToken = (token, role, req, res, next) => {
         // token expired or not valid
         if (err) res.sendStatus(402);
         if (role === 'admin') {
-            console.log(userData)
             userData.user.isadmin ? next() : res.status(403).json({ error: "Not Authorized" });
         }else{
             req.user = userData.user;

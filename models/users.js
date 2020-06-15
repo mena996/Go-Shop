@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const ProductsModel = require('./product');
-const CartModel = require('./cart');
 
 const userSchema = new mongoose.Schema({
     firstName: { type: String, required: true, minlength: 2 },
@@ -15,7 +14,11 @@ const userSchema = new mongoose.Schema({
     isadmin: { type: Boolean, required: true, minlength: 4 },
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
-    cart: [{ type: mongoose.Schema.Types.ObjectId , ref : 'Product' }],
+    cart: [{
+        product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+        price: { type: mongoose.Schema.Types.Number, require: true },
+        quantity: { type: mongoose.Schema.Types.Number, require: true },
+    }],
 })
 userSchema.pre('save', async function () {
     let docs = await userModel.find({ username: this.username });
