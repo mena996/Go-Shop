@@ -43,6 +43,8 @@ router.patch('/:id', middleware.shouldBe('admin'), async(req, res, next) => {
 
 router.post('/login', auth.login);
 router.post('/me', auth.getUser);
+router.post('/refresh', auth.regenerateAccessToken);
+router.post('/logout', auth.logout);
 
 router.use((err, req, res, next) => {
     res.send("oh no there is some thing wrong happend :( \n" + err);
