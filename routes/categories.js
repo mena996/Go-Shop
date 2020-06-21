@@ -1,6 +1,6 @@
 const express = require('express');
 const CategoryModel = require('../models/categories');
-const BookModel = require('../models/product')
+const ProductModel = require('../models/product')
 const router = express.Router();
 const auth = require('../middlewares/authorization');
 // const express = require('express');
@@ -36,11 +36,11 @@ router.get('/:id', (req, res) => {
     })
 })
 
-router.get('/:id/books', (req, res) => {
+router.get('/:id/products', (req, res) => {
     id = req.params.id
-    BookModel.find({ category: id }, (err, category_book) => {
+    ProductModel.find({ category: id }, (err, category_product) => {
         if (err) return res.send(err)
-        res.json(category_book)
+        res.json(category_product)
     })
 })
 
