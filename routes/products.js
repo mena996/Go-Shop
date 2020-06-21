@@ -123,7 +123,7 @@ router.get('/favorite/:user/:product', async (req, res, next) => {
 //         products = await CartModel.find({}).populate({
 //             path: 'product',
 //             populate: {
-//                 path: 'author'
+//                 path: 'brand'
 //             }
 //         }).where("user").equals(req.params.id);
 //         res.send(products);
@@ -232,7 +232,7 @@ router.get('/topbrands', async (req, res, next) => {
 
 router.get('/:id', async (req, res, next) => {
     try {
-        const product = await ProductModel.findById(req.params.id).populate('author').populate('category')
+        const product = await ProductModel.findById(req.params.id).populate('brand').populate('category')
         if (!product) next("product Not found..");
         else res.send(product);
     } catch (err) {
