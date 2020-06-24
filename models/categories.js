@@ -3,6 +3,7 @@ const ProductModel = require('./product');
 
 const CategorySchema = new mongoose.Schema({
     name: { type: String, required: true, minlength: 2 },
+    image: { type: String, required: true, minlength: 4 },
 })
 
 CategorySchema.pre('findOneAndDelete', function(next) {

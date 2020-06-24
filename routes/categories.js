@@ -2,6 +2,7 @@ const express = require('express');
 const CategoryModel = require('../models/categories');
 const ProductModel = require('../models/product')
 const router = express.Router();
+const multer = require('../middlewares/multer');
 const auth = require('../middlewares/authorization');
 // const express = require('express');
 // const categoryModel = require('../models/categories')
@@ -46,23 +47,26 @@ router.get('/:id/products', (req, res) => {
 
 
 
-router.post('/', auth.shouldBe('admin'),  async(req, res, next) => {
+router.post('/', auth.shouldBe('admin'),multer.upload.single('image'),  async(req, res, next) => {
     try {
         const { name } = req.body;
         const category = await CategoryModel.create({
             name,
+            image: url + '/public/images/' + req.file.filename,
         });
         res.send(category)
     } catch {
         next("Erorr while adding a category");
     }
 });
-router.patch('/:id', auth.shouldBe('admin'), async(req, res, next) => {
+router.patch('/:id', auth.shouldBe('admin'), multer.upload.single('image'), async(req, res, next) => {
+    const url = req.protocol + '://' + req.get('host');
+    if (req.file) req.body.image = url + '/public/images/' + req.file.filename;    
     try {
         const category = await CategoryModel.findByIdAndUpdate(req.params.id, { $set: req.body }, { new: true })
         if (!category) next("category not found");
         else res.json(category);
-    } catch {
+    } catch  {
         next("Error in editing category")
     }
 });

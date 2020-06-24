@@ -144,7 +144,7 @@ router.get('/topproducts', async (req, res, next) => {
                     }
                 }
             ]
-        ).sort({ rate: -1 }).limit(5);
+        ).sort({ rate: -1 });
         const bestProducts = productState.map(productState => productState['_id']);
         let products = await ProductModel.find({ "_id": { "$in": bestProducts } });
         res.send(products);
