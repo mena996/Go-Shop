@@ -23,7 +23,7 @@ router.get('/:id', (req, res) => {
 
 router.post('/', auth.shouldBe('user'), async(req, res, next) => {
     try {
-        const { date, products } = req.body;
+        const { date, products, paid } = req.body;
         /*
         {
             date:
@@ -41,6 +41,7 @@ router.post('/', auth.shouldBe('user'), async(req, res, next) => {
         const order = await OrderModel.create({
             date,
             customer,
+            paid,
             products,
             status: 0
         });

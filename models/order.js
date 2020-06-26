@@ -9,6 +9,7 @@ const OrderSchema = new mongoose.Schema({
         quantity: { type: mongoose.Schema.Types.Number, require: true },
     }],
     status: { type: mongoose.Schema.Types.Number, require: true, min:0, max:2 },
+    paid: {type: mongoose.Schema.Types.Boolean, required: true}
 });
 const orderModel = mongoose.model('Order', OrderSchema);
 module.exports = orderModel;
