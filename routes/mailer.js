@@ -228,7 +228,7 @@ function getEmailText(id) {
                             <w:anchorlock/>
                             <center style="color:#ffffff;font-family:sans-serif;font-size:15px;">Verify Email</center>
                           </v: <![endif]-->
-                            <a href="http://localhost:3000/Verify/${id}" class="button button--blue">Verify Email</a>
+                            <a href="http://localhost:3000/verify/${id}" class="button button--blue">Verify Email</a>
                           </div>
                         </td>
                       </tr>
@@ -240,7 +240,7 @@ function getEmailText(id) {
                                                                 <td>
                                                                     <p class="sub">If you’re having trouble clicking the button, copy and paste the URL below into your web browser.
                           </p>
-                                                                    <p class="sub"><a href="http://localhost:3000/Verify/${id}">http://localhost:3000/Verify/${id}</a></p>
+                                                                    <p class="sub"><a href="http://localhost:3000/verify/${id}">http://localhost:3000/verify/${id}</a></p>
                                                                 </td>
                                                             </tr>
                                                         </table>
