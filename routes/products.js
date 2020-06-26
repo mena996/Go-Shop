@@ -174,6 +174,7 @@ router.get('/topcats', async (req, res, next) => {
             let cat = {}
             cat["name"] = product['category']['name'];
             cat["_id"] = product['category']['_id'];
+            cat["image"] = product['category']['image'];
             return cat;
         }
         );

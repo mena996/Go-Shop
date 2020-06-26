@@ -48,6 +48,8 @@ router.get('/:id/products', (req, res) => {
 
 
 router.post('/', auth.shouldBe('admin'),multer.upload.single('image'),  async(req, res, next) => {
+    const url = req.protocol + '://' + req.get('host');
+    console.log(req.body);
     try {
         const { name } = req.body;
         const category = await CategoryModel.create({
@@ -55,7 +57,9 @@ router.post('/', auth.shouldBe('admin'),multer.upload.single('image'),  async(re
             image: url + '/public/images/' + req.file.filename,
         });
         res.send(category)
-    } catch {
+    } catch (e){
+        console.log(e);
+        
         next("Erorr while adding a category");
     }
 });
