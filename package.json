@@ -1,5 +1,5 @@
 {
-    "name": "goodreaders",
+    "name": "Go-Shop",
     "version": "1.0.0",
     "description": "",
     "main": "server.js",
@@ -8,16 +8,17 @@
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/mena996/goodReaders.git"
+        "url": "git+https://github.com/mena996/Go-Shop.git"
     },
     "author": "",
     "license": "ISC",
     "bugs": {
-        "url": "https://github.com/mena996/goodReaders/issues"
+        "url": "https://github.com/mena996/Go-Shop/issues"
     },
-    "homepage": "https://github.com/mena996/goodReaders#readme",
+    "homepage": "https://github.com/mena996/Go-Shop#readme",
     "dependencies": {
         "bcrypt": "^4.0.1",
+        "cookie-parser": "^1.4.5",
         "cores": "^0.8.5",
         "dotenv": "^8.2.0",
         "express": "^4.17.1",

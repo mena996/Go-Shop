@@ -1,7 +1,10 @@
 require('dotenv').config()  
 const express = require('express');
 const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
+
 const userRouter = require('./routes/users');
+const authRouter = require("./routes/authentication");
 const brandRouter = require('./routes/brands');
 const productRouter = require('./routes/products');
 const categoryRouter = require('./routes/categories');
@@ -29,11 +32,12 @@ app.use(express.json({limit: '5mb'}));
 app.use('/public', express.static('public'));
 app.use((req,res,next) => {
     res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.header("Access-Control-Allow-Credentials", true);
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Authorization, Accept");
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PATCH, DELETE');
     next();
 });
-
+app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use((req, res, next) => {
     console.log(new Date(),req.method,req.url);
     next();
@@ -45,6 +49,7 @@ app.use('/categories', categoryRouter);
 app.use('/reviews', reviewRouter);
 app.use('/orders', orderRouter);
 app.use('/statistics', statisticsRouter);
+app.use("/auth", authRouter);
 
 app.get('/', (req, res, next) => {
     res.send('HELLO iam the root path');
