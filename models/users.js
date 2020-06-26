@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema({
     password: { type: String, required: true, minlength: 4 },
     // image: { type: String, required: false },
     isadmin: { type: Boolean, required: true, minlength: 4 },
+    verified: { type: Boolean, required: true, minlength: 4 },
     favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
     wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product'}],
     cart: [{
