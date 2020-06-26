@@ -1,29 +1,34 @@
 const express = require('express');
 let UserModel = require('../models/users');
 let FavoriteModel = require('../models/favorite');
-const bcrypt = require('bcrypt');
-const auth = require('./authentication')
 const middleware = require('../middlewares/authorization');
 const router = express.Router();
-const multer = require('../middlewares/multer');
 const sendVarifyMail = require('./mailer');
-router.post('/', /*multer.upload.single('image'),*/(req, res) => {
-    const url = req.protocol + '://' + req.get('host');
-    console.log(req.body);
-    const { body: { firstName, lastName, username, email, password, phone, address } } = req;
-    const user = new UserModel({
-        firstName, lastName, username, email, password, isadmin: 0, verified: 0, phone, address,
-        // image: url + '/public/images/' + req.file.filename,
-    })
-    user.save((err) => {
-        if (err) {
-            console.log(err);
-            return res.status(400).send(err);
+    router.post('/', (req, res) => {
+        const { body: { firstName, lastName, username, email, password, phone, address } } = req;
+        const user = new UserModel({
+            firstName, lastName, username: escape(username.toLowerCase()), email, password, isadmin: 0, verified: 0, phone, address,
+        })
+        user.save((err) => {
+            if (err) {
+                console.log(err);
+                return res.status(400).send(err);
+            }
+            sendVarifyMail.sendVarifyMail(email,user._id);
+            res.json("done");
+        });
+    });
+
+    router.get('/', middleware.shouldBe('admin'), async (req, res) => {
+        try {
+            const users = await UserModel.find({}).select("-password");
+            res.json(users);
+        } catch (err) {
+            return res.status(500).send("Internal server error: Can't get users");
         }
         sendVarifyMail.sendVarifyMail(email, user._id);
         res.json("done");
     });
-});
 
 router.get('/verify/:id', async (req, res) => {
 
@@ -143,11 +148,6 @@ router.patch('/:id', middleware.shouldBe('admin'), async (req, res, next) => {
     }
 });
 
-
-router.post('/login', auth.login);
-router.post('/me', auth.getUser);
-router.post('/refresh', auth.regenerateAccessToken);
-router.post('/logout', auth.logout);
 
 router.use((err, req, res, next) => {
     res.send("oh no there is some thing wrong happend :( \n" + err);
