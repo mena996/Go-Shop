@@ -83,7 +83,6 @@ router.patch('/cart', middleware.shouldBe('user'), async (req, res, next) => {
         console.log(req.body)
         await UserModel.updateOne({ _id: req.user._id }, { $set: { 'cart': req.body } }, { new: true })
         const cart = await UserModel.findOne({ _id: req.user._id }).populate('cart.product').select('cart');
-        console.log(cart)
         res.json(cart);
     } catch (e) {
         console.log(e)
@@ -111,19 +110,18 @@ router.get('/orders', middleware.shouldBe('user'), async (req, res, next) => {
 
 router.post('/wishlist', middleware.shouldBe('user'), async (req, res, next) => {
     try {
-        await UserModel.updateOne({ _id: req.user._id }, { $push: { wishlist: req.body } });
+        await UserModel.updateOne({ _id: req.user._id }, { $push: { wishlist: req.body.product } });
         res.sendStatus(200);
-    } catch {
+    } catch (e){
+        console.log(e)
         next("Internal server error: Can't update your wishlist");
     }
 });
 
 router.patch('/wishlist', middleware.shouldBe('user'), async (req, res, next) => {
     try {
-        console.log(req.body)
         await UserModel.updateOne({ _id: req.user._id }, { $set: { 'wishlist': req.body } }, { new: true })
-        const wishlist = await UserModel.findOne({ _id: req.user._id }).populate('wishlist.product').select('wishlist');
-        console.log(wishlist)
+        const wishlist = await UserModel.findOne({ _id: req.user._id }).populate('wishlist').select('wishlist');
         res.json(wishlist);
     } catch (e) {
         console.log(e)
@@ -133,7 +131,7 @@ router.patch('/wishlist', middleware.shouldBe('user'), async (req, res, next) =>
 
 router.get('/wishlist/:id', async (req, res, next) => {
     try {
-        const wishlist = await UserModel.findById(req.params.id).populate('wishlist.product').select('wishlist');
+        const wishlist = await UserModel.findById(req.params.id).populate('wishlist').select('wishlist');
         res.json(wishlist);
     } catch {
         next("Internal server error: Can't get wishlist details");
@@ -141,7 +139,7 @@ router.get('/wishlist/:id', async (req, res, next) => {
 });
 router.get('/wishlist', middleware.shouldBe('user'), async (req, res, next) => {
     try {
-        const wishlist = await UserModel.findOne({ _id: req.user._id }).populate('wishlist.product').select('wishlist');
+        const wishlist = await UserModel.findOne({ _id: req.user._id }).populate('wishlist').select('wishlist');
         res.json(wishlist);
     } catch {
         next("Internal server error: Can't get wishlist details");
@@ -160,7 +158,7 @@ router.patch('/:id', middleware.shouldBe('admin'), async (req, res, next) => {
 
 
 router.use((err, req, res, next) => {
-    res.send("oh no there is some thing wrong happend :( \n" + err);
+    res.status(500).send("oh no there is some thing wrong happend :( \n" + err);
 });
 
 module.exports = router;
