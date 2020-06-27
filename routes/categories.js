@@ -39,7 +39,7 @@ router.get('/:id', (req, res) => {
 
 router.get('/:id/products', (req, res) => {
     id = req.params.id
-    ProductModel.find({ category: id }, (err, category_product) => {
+    ProductModel.find({ category: id, available: true }, (err, category_product) => {
         if (err) return res.send(err)
         res.json(category_product)
     })

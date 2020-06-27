@@ -28,7 +28,7 @@ router.get('/:id', async (req, res) => {
 
 
 router.get('/:id/products', (req, res, next) => {
-    return ProductModel.find({}).populate('brand').populate('category').where('brand').equals(req.params.id).exec((err, products) => {
+    return ProductModel.find({available: true}).populate('brand').populate('category').where('brand').equals(req.params.id).exec((err, products) => {
         if (err) next(err);
         else res.json(products);
     });

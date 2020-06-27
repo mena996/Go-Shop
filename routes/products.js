@@ -6,7 +6,7 @@ const router = express.Router();
 const auth = require('../middlewares/authorization');
 const multer = require('../middlewares/multer');
 
-router.get('/', async (req, res, next) => {
+router.get('/', auth.shouldBe('admin'), async (req, res, next) => {
     try {
         const products = await ProductModel.find({}).populate('brand').populate('category')
         if (products) res.send(products);
@@ -14,6 +14,15 @@ router.get('/', async (req, res, next) => {
 
     } catch (err) {
         next("couldent fetch products..");
+    }
+});
+
+router.get('/available', async (req, res, next) => {
+    try {
+        const products = await ProductModel.find({available: true}).populate('brand').populate('category')
+        res.send(products);
+    } catch (err) {
+        next("Internal server error: Couldn't get available products");
     }
 });
 
@@ -27,7 +36,8 @@ router.post('/', auth.shouldBe('admin'), multer.upload.single('image'), async (r
             description,
             price,
             category,
-            brand
+            brand,
+            available: true
         });
         res.send(product)
     } catch{
@@ -146,7 +156,7 @@ router.get('/topproducts', async (req, res, next) => {
             ]
         ).sort({ rate: -1 });
         const bestProducts = productState.map(productState => productState['_id']);
-        let products = await ProductModel.find({ "_id": { "$in": bestProducts } });
+        let products = await ProductModel.find({ "_id": { "$in": bestProducts }, available: true });
         res.send(products);
     } catch (err) {
         console.log(err);

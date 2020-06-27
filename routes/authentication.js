@@ -17,36 +17,39 @@ const login = async (req, res) => {
     if (!user) return res.sendStatus(401).send("Invalid credentials");
     // else, compare the password hash with the hashed password in the database
     if (await bcrypt.compare(password, user.password)) {
-      // Generate the access token
-      const accessToken = generateAccessToken(user);
-      // Split the JWT token into two parts:
-      // first part is the header and payload part and the other part is the signature and it's httpOnly
-      // to prevent modifying it and both parts are signed with a key
-      // both will be set to be secured: true in production and deployment
-      const accessTokenP1 = accessToken.split(".").slice(0, 2).join(".");
-      const accessTokenP2 = accessToken.split(".")[2];
-      res.cookie("accessTokenP1", accessTokenP1, {
-        secure: false,
-        sameSite: true,
-        signed: true,
-        expires: new Date(Date.now() + 31536000000),
-      });
-      res.cookie("accessTokenP2", accessTokenP2, {
-        secure: false,
-        httpOnly: true,
-        sameSite: true,
-        signed: true,
-        expires: new Date(Date.now() + 31536000000),
-      });
-      // sending userData
-      const {password, __v, email, fullName, ...userData} = user._doc
-      res.cookie("userData", JSON.stringify(userData), {
-        secure: false,
-        sameSite: true,
-        expires: new Date(Date.now() + 31536000000),
-      });
-      // Send success response
-      (isAdmin && user.isadmin) ? res.sendStatus(201) : res.sendStatus(200);
+      if (!user.verified) res.sendStatus(403)
+      else {
+        // Generate the access token
+        const accessToken = generateAccessToken(user);
+        // Split the JWT token into two parts:
+        // first part is the header and payload part and the other part is the signature and it's httpOnly
+        // to prevent modifying it and both parts are signed with a key
+        // both will be set to be secured: true in production and deployment
+        const accessTokenP1 = accessToken.split(".").slice(0, 2).join(".");
+        const accessTokenP2 = accessToken.split(".")[2];
+        res.cookie("accessTokenP1", accessTokenP1, {
+          secure: false,
+          sameSite: true,
+          signed: true,
+          expires: new Date(Date.now() + 31536000000),
+        });
+        res.cookie("accessTokenP2", accessTokenP2, {
+          secure: false,
+          httpOnly: true,
+          sameSite: true,
+          signed: true,
+          expires: new Date(Date.now() + 31536000000),
+        });
+        // sending userData
+        const {password, __v, email, fullName, ...userData} = user._doc
+        res.cookie("userData", JSON.stringify(userData), {
+          secure: false,
+          sameSite: true,
+          expires: new Date(Date.now() + 31536000000),
+        });
+        // Send success response
+        (isAdmin && user.isadmin) ? res.sendStatus(201) : res.sendStatus(200);
+      }
     } else {
       // if the password hash is not matched return error response
       res.status(401).send("Invalid credentials");
