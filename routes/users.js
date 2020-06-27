@@ -1,5 +1,6 @@
 const express = require('express');
 let UserModel = require('../models/users');
+let OrderModel = require('../models/order');
 let FavoriteModel = require('../models/favorite');
 const middleware = require('../middlewares/authorization');
 const router = express.Router();
@@ -96,6 +97,15 @@ router.get('/cart', middleware.shouldBe('user'), async (req, res, next) => {
         res.json(cart);
     } catch {
         next("Internal server error: Can't get cart details");
+    }
+});
+
+router.get('/orders', middleware.shouldBe('user'), async (req, res, next) => {
+    try {
+        const orders = await OrderModel.find({ customer: req.user._id }).populate('products.product').populate('customer');
+        res.json(orders);
+    } catch {
+        next("Internal server error: Can't get orders details");
     }
 });
 
