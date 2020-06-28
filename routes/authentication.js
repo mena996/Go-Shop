@@ -41,7 +41,7 @@ const login = async (req, res) => {
           expires: new Date(Date.now() + 31536000000),
         });
         // sending userData
-        const {password, __v, email, fullName, ...userData} = user._doc
+        const {password, __v, email,username, phone, verified, favorites, isadmin, ...userData} = user._doc
         res.cookie("userData", JSON.stringify(userData), {
           secure: false,
           sameSite: true,

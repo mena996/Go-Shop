@@ -71,7 +71,9 @@ router.get('/favorite', middleware.shouldBe('user'), async (req, res, next) => {
 
 router.post('/cart', middleware.shouldBe('user'), async (req, res, next) => {
     try {
-        await UserModel.updateOne({ _id: req.user._id }, { $push: { cart: req.body } });
+        const user = await UserModel.findOneAndUpdate({ _id: req.user._id }, { $push: { cart: req.body } }, {new: true});
+        res.clearCookie('userData');
+        updateUserCookie(user, res);
         res.sendStatus(200);
     } catch {
         next("Internal server error: Can't update your cart");
@@ -80,12 +82,12 @@ router.post('/cart', middleware.shouldBe('user'), async (req, res, next) => {
 
 router.patch('/cart', middleware.shouldBe('user'), async (req, res, next) => {
     try {
-        console.log(req.body)
-        await UserModel.updateOne({ _id: req.user._id }, { $set: { 'cart': req.body } }, { new: true })
+        const user = await UserModel.findOneAndUpdate({ _id: req.user._id }, { $set: { 'cart': req.body } }, { new: true });
         const cart = await UserModel.findOne({ _id: req.user._id }).populate('cart.product').select('cart');
+        res.clearCookie('userData');
+        updateUserCookie(user, res);
         res.json(cart);
-    } catch (e) {
-        console.log(e)
+    } catch {
         next("Internal server error: Can't update your cart");
     }
 });
@@ -110,7 +112,9 @@ router.get('/orders', middleware.shouldBe('user'), async (req, res, next) => {
 
 router.post('/wishlist', middleware.shouldBe('user'), async (req, res, next) => {
     try {
-        await UserModel.updateOne({ _id: req.user._id }, { $push: { wishlist: req.body.product } });
+        const user = await UserModel.findOneAndUpdate({ _id: req.user._id }, { $push: { wishlist: req.body.product } }, {new: true});
+        res.clearCookie('userData');
+        updateUserCookie(user, res);
         res.sendStatus(200);
     } catch (e){
         console.log(e)
@@ -120,8 +124,10 @@ router.post('/wishlist', middleware.shouldBe('user'), async (req, res, next) => 
 
 router.patch('/wishlist', middleware.shouldBe('user'), async (req, res, next) => {
     try {
-        await UserModel.updateOne({ _id: req.user._id }, { $set: { 'wishlist': req.body } }, { new: true })
+        const user = await UserModel.findOneAndUpdate({ _id: req.user._id }, { $set: { 'wishlist': req.body } }, { new: true })
         const wishlist = await UserModel.findOne({ _id: req.user._id }).populate('wishlist').select('wishlist');
+        res.clearCookie('userData');
+        updateUserCookie(user, res);
         res.json(wishlist);
     } catch (e) {
         console.log(e)
@@ -156,6 +162,14 @@ router.patch('/:id', middleware.shouldBe('admin'), async (req, res, next) => {
     }
 });
 
+const updateUserCookie = (user, res) => {
+    const {password, __v, email,username, phone, verified, favorites, isadmin, ...userData} = user._doc
+        res.cookie("userData", JSON.stringify(userData), {
+            secure: false,
+            sameSite: true,
+            expires: new Date(Date.now() + 31536000000),
+        });
+}
 
 router.use((err, req, res, next) => {
     res.status(500).send("oh no there is some thing wrong happend :( \n" + err);
