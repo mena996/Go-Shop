@@ -9,17 +9,19 @@ const multer = require('../middlewares/multer');
 router.get('/', auth.shouldBe('admin'), async (req, res, next) => {
     try {
         const products = await ProductModel.find({}).populate('brand').populate('category')
+        console.log(products);
         if (products) res.send(products);
         else next(err)
 
     } catch (err) {
+        console.log(err);
         next("couldent fetch products..");
     }
 });
 
 router.get('/available', async (req, res, next) => {
     try {
-        const products = await ProductModel.find({available: true}).populate('brand').populate('category')
+        const products = await ProductModel.find({ available: true }).populate('brand').populate('category')
         res.send(products);
     } catch (err) {
         next("Internal server error: Couldn't get available products");
@@ -72,10 +74,10 @@ router.post('/favorite', async (req, res, next) => {
         const { user, product } = req.body;
         // options = { upsert: true, new: true, setDefaultsOnInsert: true };
         productFavorite = await FavoriteModel.find({ user, product });
-        if(productFavorite.length>0){
+        if (productFavorite.length > 0) {
             await FavoriteModel.findByIdAndDelete(productFavorite[0]._id);
             console.log("deleted");
-        }else{
+        } else {
             await FavoriteModel.create({
                 user, product
             });
@@ -178,29 +180,33 @@ router.get('/topcats', async (req, res, next) => {
             ]
         ).sort({ rate: -1 });
         const bestProducts = productState.map(productState => productState['_id']);
-        let products = await ProductModel.find({ "_id": { "$in": bestProducts } }).populate('category');
-        // const bestcats = products.map(product => product['category']['name']);
-        const bestcats = products.map(product => {
-            let cat = {}
-            cat["name"] = product['category']['name'];
-            cat["_id"] = product['category']['_id'];
-            cat["image"] = product['category']['image'];
-            return cat;
+        let productsData = await ProductModel.find({ "_id": { "$in": bestProducts } }).populate('category');
+        let products = productState.map((product) => {
+                product.name = (productsData.filter((pState) => {return product._id==pState.id}))[0].name;
+                product.category = (productsData.filter((pState) => {return product._id==pState.id}))[0].category;
+                return product;
+            });
+            const bestcats = products.map(product => {
+                let cat = {}
+                cat["name"] = product['category']['name'];
+                cat["_id"] = product['category']['_id'];
+                cat["image"] = product['category']['image'];
+                return cat;
+            }
+            );
+            const bestcatsU = bestcats.map(e => e["_id"])
+                .map((e, i, final) => final.indexOf(e) === i && i)
+                .filter((e) => bestcats[e]).map(e => bestcats[e]);
+
+
+
+            // console.log(bestcatsU)
+            res.send(bestcatsU.slice(0, 5));
+        } catch (err) {
+            console.log(err);
+            next(err);
         }
-        );
-        const bestcatsU = bestcats.map(e => e["_id"])
-                            .map((e, i, final) => final.indexOf(e) === i && i)
-                            .filter((e) => bestcats[e]).map(e => bestcats[e]);
-
-
-
-        // console.log(bestcatsU)
-        res.send(bestcatsU.slice(0, 5));
-    } catch (err) {
-        console.log(err);
-        next(err);
-    }
-});
+    });
 
 router.get('/topbrands', async (req, res, next) => {
     try {
@@ -216,7 +222,12 @@ router.get('/topbrands', async (req, res, next) => {
             ]
         ).sort({ rate: -1 }).limit(5);
         const bestProducts = productState.map(productState => productState['_id']);
-        let products = await ProductModel.find({ "_id": { "$in": bestProducts } }).populate('brand');
+        let productsData = await ProductModel.find({ "_id": { "$in": bestProducts } }).populate('brand');
+        let products = productState.map((product) => {
+            product.name = (productsData.filter((pState) => {return product._id==pState.id}))[0].name;
+            product.brand = (productsData.filter((pState) => {return product._id==pState.id}))[0].brand;
+            return product;
+        });
         const bestbrand = products.map(product => {
             let auther = {}
             auther["name"] = product['brand']['name'];
@@ -225,8 +236,8 @@ router.get('/topbrands', async (req, res, next) => {
         }
         );
         const bestbrandU = bestbrand.map(e => e["_id"])
-                                    .map((e, i, final) => final.indexOf(e) === i && i)
-                                    .filter((e) => bestbrand[e]).map(e => bestbrand[e]);
+            .map((e, i, final) => final.indexOf(e) === i && i)
+            .filter((e) => bestbrand[e]).map(e => bestbrand[e]);
 
         // console.log(bestbrandU.slice(0, 5))
         res.send(bestbrandU.slice(0, 5));
